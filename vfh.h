@@ -1,25 +1,40 @@
-/* histogramGrid: Stores a histogram (certainty) grid. */
-struct histogramGrid {
-	short cells;
+/*
+** Certainty Grid
+*/
+
+/* grid: Stores a histogram (certainty) grid. */
+struct grid {
+	short dimension;
 	float resolution;
-	short *grid;
+	short *cells;
 };
 
-typedef struct histogramGrid histogramGrid_t;
+typedef struct grid grid_t;
 
-/* histogramGridInit: Initialize hg to a full grid with all cells equal to 0. */
-void histogramGridInit(histogramGrid_t * hg, short cells, float resolution);
+/* grid_init: Return a pointer to an empty grid. NULL otherwise. */
+grid_t * grid_init(short dimension, float resolution);
 
-/* polarHistogram: Stores a polar histogram. */
-struct polarHistogram {
+/* grid_update: Implement */
+
+/*
+** Polar Histogram
+*/
+
+/* hist: Stores a polar histogram. */
+struct hist {
 	short alpha;
 	short sectors;
-	int * obstacleDensities;
+	int * densities;
 };
 
-typedef struct polarHistogram polarHistogram_t;
+typedef struct hist hist_t;
 
-/* polarHistogramInit: Update ph with hg's information. */
-void polarHistogramInit(polarHistogram_t * ph, histogramGrid_t * hg, short alpha);
+/* hist_init: Return a pointer to a new hist. NULL otherwise. */
+hist_t * hist_init(short alpha);
 
-void polarHistogramUpdate(polarHistogram_t * ph, histogramGrid_t * hg);
+/* hist_update: Update hist with grid's information. */
+int hist_update(hist_t * hist, grid_t * grid);
+
+/*
+	
+*/
