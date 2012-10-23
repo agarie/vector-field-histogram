@@ -12,16 +12,6 @@
 #define DENSITY_A 10
 #define DENSITY_B 5
 
-int main(void) {
-	histogramGrid_t hg;
-	polarHistogram_t ph;
-	
-	histogramGridInit(&hg, CELLS, CERTAINTY_GRID_RESOLUTION);
-	polarHistogramInit(&ph, &hg, ALPHA);
-	
-	return 0;
-}
-
 void histogramGridInit(histogramGrid_t * hg, short cells, float resolution) {
 	int i, j;
 	
@@ -47,7 +37,6 @@ void histogramGridInit(histogramGrid_t * hg, short cells, float resolution) {
 
 void polarHistogramInit(polarHistogram_t * ph, histogramGrid_t * hg, short alpha) {
 	int i, j;
-	float beta, density;
 	
 	ph->alpha = alpha;
 	ph->sectors = 360 / alpha;
@@ -59,6 +48,11 @@ void polarHistogramInit(polarHistogram_t * ph, histogramGrid_t * hg, short alpha
 	for (i = 0; i < ph->sectors; ++i) {
 		ph->obstacleDensities[i] = 0;
 	}
+}
+
+void polarHistogramUpdate(polarHistogram_t * ph, histogramGrid_t * hg) {
+	int i, j;
+	float beta, density;
 	
 	/* Calculate densities based on hg. */
 	for (i = 0; i < hg->cells; ++i) {

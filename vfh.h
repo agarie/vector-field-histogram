@@ -21,3 +21,5 @@ typedef struct polarHistogram polarHistogram_t;
 
 /* polarHistogramInit: Update ph with hg's information. */
 void polarHistogramInit(polarHistogram_t * ph, histogramGrid_t * hg, short alpha);
+
+void polarHistogramUpdate(polarHistogram_t * ph, histogramGrid_t * hg);
