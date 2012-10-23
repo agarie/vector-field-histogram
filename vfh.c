@@ -21,42 +21,43 @@
 grid_t * grid_init(short dimension, float resolution) {
 	int i, j;
 	
-	/* Create a grid pointer and allocate memory for it. */
+	/* Create a grid pointer and allocate memory to it. */
 	grid_t * grid;
 	grid = (grid_t *)malloc(sizeof(grid_t));
 	
 	if (NULL == grid) return NULL;
-	
+
+	/* Initialize grid's parameters. */
 	grid->dimension = dimension;
 	grid->resolution = resolution;
 	
 	/*
-	** Allocate enough memory for the grid (dimension x dimension short ints).
+	** Allocate enough memory for the grid (dimension x dimension shorts).
 	**
-	** Making this a single allocation is simpler and, as it's an internal data
-	** structure, it's not so problematic to iterate over it. This *IS* a
-	** performance hack, too. 
+	** Making this a single allocation is simpler. Also, This *IS* a performance
+	** hack.
 	*/
-	grid->cells = (short *)malloc(grid->dimension * grid->dimension * sizeof(short));
+	grid->cells = (short *)malloc(dimension * dimension * sizeof(short));
 	
 	if (NULL == grid->cells) return NULL;
 	
 	/* Initialize all elements to 0. */
-	for (i = 0; i < grid->dimension; ++i) {
-		for (j = 0; j < grid->dimension; ++j) {
-			grid->cells[i * grid->dimension + j] = 0;
+	for (i = 0; i < dimension; ++i) {
+		for (j = 0; j < dimension; ++j) {
+			grid->cells[i * dimension + j] = 0;
 		}
 	}
 	
 	return grid;
 }
 
-hist_t * hist_init(short alpha) {
+hist_t * hist_init(short alpha, double density_a, double density_b) {
 	int i;
 	
-	/* Create a histogram pointer and allocate memory for it. */
+	/* Create a histogram pointer and allocate memory to it. */
 	hist_t * hist;
 	hist = (hist_t *)malloc(sizeof(hist_t));
+	
 	
 	if (NULL == hist) return NULL;
 	
@@ -77,20 +78,36 @@ hist_t * hist_init(short alpha) {
 	return hist;
 }
 
-int hist_update(hist_t * hist, short * cells) {
+int hist_update(hist_t * hist, grid_t * grid) {
 	int i, j;
+	int dim; /* grid's dimension. */
+	float dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
 	float beta, density;
 	
+	dim = grid->dimension;
+		
+	if (hist->density_a >= 0 || hist->density_b >= 0) {
+		return 0;
+	} else {
+		dens_a = hist->density_a;
+		dens_b = hist->density_b;
+	}
+	
 	/* Calculate densities based on grid. */
-	for (i = 0; i < grid->dimension; ++i) {
-		for (j = 0; j < grid->dimension; ++j) {
-			/* Calculate the beta and obstacle density of this cell. */
-			beta = atan2((double)(j - grid->dimension/2), (double)(i - grid->dimension/2));
-			density = pow(grid->cells[i * grid->dimension + j], 2);
-			density *= DENSITY_A - DENSITY_B * sqrt(pow(i - grid->dimension/2, 2) + pow(j - grid->dimension/2, 2));
+	for (i = 0; i < dim; ++i) {
+		for (j = 0; j < dim; ++j) {
+
+			/* Calculate the angular position beta of this cell. */
+			beta = atan2((double)(j - dim/2), (double)(i - dim/2));
+			
+			/* Calculate the obstacle density of this cell. */
+			density = pow(grid->cells[i * dim + j], 2);
+			density *= dens_a - dens_b * sqrt(pow(i - dim/2, 2) + pow(j - dim/2, 2));
 			
 			/* Add density to respective point in the histogram. */
-			hist->densities[(int) beta / hist->alpha] += density;
+			hist->densities[(int) floor(beta / hist->alpha)] += density;
 		}
 	}
+	
+	return 1;
 }

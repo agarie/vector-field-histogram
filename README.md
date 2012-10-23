@@ -7,8 +7,5 @@ I'm going to use this in a project for my real-time systems class at Embry-Riddl
 ## To do
 
 + Finish implementing the basic algorithm.
-+ Better naming conventions.
-+ Functions returning pointers and error checking.
 + Divide it logically in files.
-+ Use Rake for compilation.
-+ tests?
++ Introduce some examples.
