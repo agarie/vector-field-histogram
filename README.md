@@ -6,6 +6,14 @@ I'm going to use this in a project for my real-time systems class at Embry-Riddl
 
 ## To do
 
-+ Finish implementing the basic algorithm.
++ Finish implementing the basic algorithm: functions to update the certainty grid and to retrieve a moving window from it.
 + Divide it logically in files.
-+ Introduce some examples.
++ Introduce some examples and test data.
+
+## How to install
+
+## How to use
+
+## License
+
+Copyright (c) 2012 Carlos Agarie. See LICENSE for details.
