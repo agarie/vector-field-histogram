@@ -3,9 +3,11 @@
 
 #include "vfh.h"
 
+/* Guarantee that this is the MIN macro used. */
+#undef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 /*
-** I'm not done implementing the algorith.
-**
 ** These parameters are there to help me remember them, basically.
 */
 
@@ -14,11 +16,23 @@
 #define CERTAINTY_GRID_RESOLUTION 0.1
 #define ALPHA 5
 
-/* Parameter for density calculation. */
+/* Parameters for density calculation. */
 #define DENSITY_A 10
 #define DENSITY_B 5
 
-grid_t * grid_init(short dimension, float resolution) {
+/* Parameters for direction and velocity calculations. */
+#define OBSTACLE_DENSITY_THRESHOLD 10
+#define VELOCITY_REDUCTION 30
+	
+/* Where we want to go. */
+#define OBJECTIVE_X 87
+#define OBJECTIVE_Y 87	
+
+/*
+** Certainty grid.
+*/
+
+grid_t * grid_init(short dimension, double resolution) {
 	int i, j;
 	
 	/* Create a grid pointer and allocate memory to it. */
@@ -51,7 +65,11 @@ grid_t * grid_init(short dimension, float resolution) {
 	return grid;
 }
 
-hist_t * hist_init(short alpha, double density_a, double density_b) {
+/*
+** Polar histogram.
+*/
+
+hist_t * hist_init(short alpha, double threshold, double velocity_reduction, double density_a, double density_b) {
 	int i;
 	
 	/* Create a histogram pointer and allocate memory to it. */
@@ -64,6 +82,8 @@ hist_t * hist_init(short alpha, double density_a, double density_b) {
 	/* Initialize the histogram parameters. */
 	hist->alpha = alpha;
 	hist->sectors = 360 / alpha;
+	hist->threshold = threshold;
+	hist->velocity_reduction = velocity_reduction;
 	
 	/* Allocate the array to hold the obstacle density of each sector. */
 	hist->densities = (int *)malloc(hist->sectors * sizeof(int));
@@ -78,20 +98,15 @@ hist_t * hist_init(short alpha, double density_a, double density_b) {
 	return hist;
 }
 
-int hist_update(hist_t * hist, grid_t * grid) {
+void hist_update(hist_t * hist, grid_t * grid) {
 	int i, j;
 	int dim; /* grid's dimension. */
-	float dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
-	float beta, density;
+	double dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
+	double beta, density;
 	
-	dim = grid->dimension;
-		
-	if (hist->density_a >= 0 || hist->density_b >= 0) {
-		return 0;
-	} else {
-		dens_a = hist->density_a;
-		dens_b = hist->density_b;
-	}
+	dim = grid->dimension;		
+	dens_a = hist->density_a;
+	dens_b = hist->density_b;
 	
 	/* Calculate densities based on grid. */
 	for (i = 0; i < dim; ++i) {
@@ -108,6 +123,39 @@ int hist_update(hist_t * hist, grid_t * grid) {
 			hist->densities[(int) floor(beta / hist->alpha)] += density;
 		}
 	}
+}
+
+/*
+** Control signals.
+*/
+
+void control_signals(short * theta, double * velocity_multiplier, hist_t * hist, short objective_direction) {
+	*theta = calculate_direction(hist, objective_direction);
 	
-	return 1;
+	*velocity_multiplier = calculate_vel_multiplier(hist->densities[*theta], hist->velocity_reduction);
+}
+
+short calculate_direction(hist_t * hist, short obj_direction) {
+	short sector, best_direction = -1;
+	
+	/*
+	** Search the densities array and return the most similar to the objective
+	** direction that is below the threshold.
+	*/
+	for (sector = 0; sector < hist->sectors; ++sector) {
+		if (hist->densities[sector] < hist->threshold) {
+			if (-1 == best_direction) {
+				best_direction = sector;
+			} else {
+				best_direction = MIN(abs(best_direction - obj_direction),
+														abs(sector - obj_direction));
+			}
+		}
+	}
+	
+	return best_direction;
+}
+
+double calculate_vel_multiplier(double obstacle_density, double velocity_reduction) {
+	return 1 - MIN(obstacle_density, velocity_reduction) / velocity_reduction;
 }
