@@ -1,3 +1,14 @@
+/*
+** Virtual Field Histogram
+**
+** vfh.c
+**
+** Author: Carlos Agarie Junior
+**
+** This is an implementation of the Virtual Field Histogram algorithm, developed
+** by J. Borenstein and Y.Koren in 1990.
+*/
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -11,9 +22,14 @@
 ** These parameters are there to help me remember them, basically.
 */
 
-/* Parameters to the algorithm. */
-#define DIM 10
+/* Parameters for the grid. */
+#define DIM 11 /* Must be an odd number. */
 #define CERTAINTY_GRID_RESOLUTION 0.1
+
+/* Parameters for the moving window. */
+#define WINDOW_DIM 5
+
+/* Parameters for histogram calculation. */
 #define ALPHA 5
 
 /* Parameters for density calculation. */
@@ -32,7 +48,7 @@
 ** Certainty grid.
 */
 
-grid_t * grid_init(short dimension, double resolution) {
+grid_t * grid_init(int dimension, double resolution) {
 	int i, j;
 	
 	/* Create a grid pointer and allocate memory to it. */
@@ -46,12 +62,12 @@ grid_t * grid_init(short dimension, double resolution) {
 	grid->resolution = resolution;
 	
 	/*
-	** Allocate enough memory for the grid (dimension x dimension shorts).
+	** Allocate enough memory for the grid (dimension x dimension ints).
 	**
 	** Making this a single allocation is simpler. Also, This *IS* a performance
 	** hack.
 	*/
-	grid->cells = (short *)malloc(dimension * dimension * sizeof(short));
+	grid->cells = (int *)malloc(dimension * dimension * sizeof(int));
 	
 	if (NULL == grid->cells) return NULL;
 	
@@ -65,11 +81,68 @@ grid_t * grid_init(short dimension, double resolution) {
 	return grid;
 }
 
+void grid_update(grid_t * grid, int current_position_x, int current_position_y, rangefinder_data_t * data, int n) {
+	int i, dim, x_cartesian, y_cartesian;
+	
+	dim = grid->dimension;
+	
+	/*
+	** Transform each sensor reading into cartesian coordinates and increase the
+	** corresponding cell's obstacle density.
+	*/
+	for (i = 0; i < n; ++i) {
+		x_cartesian = (int) floor(data[i].distance * cos(data[i].direction));
+		x_cartesian += current_position_x;
+		
+		y_cartesian = (int) floor(data[i].distance * sin(data[i].direction));
+		y_cartesian += current_position_y;
+
+		/* Avoiding buffer overflows... */
+		if (x_cartesian < dim && y_cartesian < dim) {
+			grid->cells[x_cartesian * dim + y_cartesian] += 1;			
+		}
+	}
+}
+
+grid_t * get_moving_window(grid_t * grid, int current_position_x, int current_position_y, int dim) {
+	int i, j; /* Indexes for the moving window. */
+	int grid_i, grid_j; /* Indexes for the grid. */
+	grid_t * moving_window;
+	
+	/*
+	** Create a window with dimension dim and the same resolution as grid.
+	**
+	** If grid_init returns NULL, exit the function.
+	*/
+	moving_window = grid_init(dim, grid->resolution);
+		
+	if (NULL != moving_window) {
+		
+		/* Populate moving_window's cells with the values of the ones in grid. */
+		for (i = 0; i < dim; ++i) {
+			for (j = 0; j < dim; ++j) {
+				
+				/* x and y are the center coordinates of the body with sensors. */
+				grid_i = i + current_position_x + (dim - 1) / 2;
+				grid_j = j + current_position_y + (dim - 1) / 2;
+				
+				/* Copy the information from the grid to the moving window. */
+				if (grid_i < grid->dimension && grid_j < grid->dimension) {
+					moving_window->cells[i * dim + j] = grid->cells[grid_i *
+						grid->dimension + grid_j];					
+				}
+			}
+		}
+	}
+	
+	return moving_window;
+}
+
 /*
 ** Polar histogram.
 */
 
-hist_t * hist_init(short alpha, double threshold, double velocity_reduction, double density_a, double density_b) {
+hist_t * hist_init(int alpha, double threshold, double velocity_reduction, double density_a, double density_b) {
 	int i;
 	
 	/* Create a histogram pointer and allocate memory to it. */
@@ -129,14 +202,15 @@ void hist_update(hist_t * hist, grid_t * grid) {
 ** Control signals.
 */
 
-void control_signals(short * theta, double * velocity_multiplier, hist_t * hist, short objective_direction) {
+void control_signals(int * theta, double * vel_multiplier, hist_t * hist, int objective_direction) {
 	*theta = calculate_direction(hist, objective_direction);
 	
-	*velocity_multiplier = calculate_vel_multiplier(hist->densities[*theta], hist->velocity_reduction);
+	*vel_multiplier = calculate_vel_damping(hist->densities[*theta],
+		hist->velocity_reduction);
 }
 
-short calculate_direction(hist_t * hist, short obj_direction) {
-	short sector, best_direction = -1;
+int calculate_direction(hist_t * hist, int obj_direction) {
+	int sector, best_direction = -1;
 	
 	/*
 	** Search the densities array and return the most similar to the objective
@@ -147,8 +221,7 @@ short calculate_direction(hist_t * hist, short obj_direction) {
 			if (-1 == best_direction) {
 				best_direction = sector;
 			} else {
-				best_direction = MIN(abs(best_direction - obj_direction),
-														abs(sector - obj_direction));
+				best_direction = MIN(abs(best_direction - obj_direction), abs(sector - obj_direction));
 			}
 		}
 	}
@@ -156,6 +229,6 @@ short calculate_direction(hist_t * hist, short obj_direction) {
 	return best_direction;
 }
 
-double calculate_vel_multiplier(double obstacle_density, double velocity_reduction) {
-	return 1 - MIN(obstacle_density, velocity_reduction) / velocity_reduction;
+double calculate_vel_damping(double obstacle_density, double velocity_reduction) {
+	return 1.0 - MIN(obstacle_density, velocity_reduction) / velocity_reduction;
 }
