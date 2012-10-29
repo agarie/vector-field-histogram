@@ -6,21 +6,23 @@ I'm going to use this in a project for my real-time systems class at Embry-Riddl
 
 ## To do
 
-+ Complete the parameters list with descriptions.
-+ Include drawing showing the referentials used for the sensors and the robot.
++ Complete the parameter list with descriptions.
++ Include drawings showing the referentials used for the sensors and the robot.
 + Introduce some examples and test data.
 + UNIT TESTS. The [cmockery](http://code.google.com/p/cmockery/) library appears to be good.
 + Create libvfh to make reusability easier.
 
 ## How to install
 
+!!!
+
 ## How to use
 
-Basically, this algorithm receives as inputs a lot of rangefinder sensor readings and generates control signals - the "best" direction and a damping factor for the velocity.
+Basically, this algorithm receives as inputs a lot of rangefinder sensor readings and generates control signals - the "best" direction and a damping factor for the max velocity.
 
 The rangefinder readings are passed to the certainty grid as an array of `rangefinder_data_t` (a struct with fields `distance` and `direction`) via the function `grid_update()`.
 
-Also, there are a lot of necessary parameters. A simple list is given:
+Also, there are a lot of necessary parameters:
 
 + Certainty grid dimension (must be odd)
 + Certainty grid resolution
@@ -33,7 +35,7 @@ Also, there are a lot of necessary parameters. A simple list is given:
 + Objective position X
 + Objective position Y
 
-I'll include an example file showing how to use this library in a project in the future.
+In the future, I'll include an example file showing how to use this library in a project.
 
 ## License
 

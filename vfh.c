@@ -44,8 +44,29 @@
 #define OBJECTIVE_X 87
 #define OBJECTIVE_Y 87	
 
+/* Helper functions. */
+
+int modulo(int x, int modulo) {
+	/* Source: http://crsouza.blogspot.com/2009/09/modulo-and-modular-distance-in-c.html */
+	int r;
+	
+	if (modulo < 0) modulo = -modulo;
+	
+	r = x % m;
+	return r < 0 ? r + m : r;
+}
+
+int modular_dist(int a, int b, int modulo) {
+	int dist_a, dist_b;
+	
+	dist_a = modulo(a - b, modulo);
+	dist_b = modulo(b - a, modulo);
+	
+	return dist_a < dist_b? dist_a : dist_b;
+}	
+
 /*
-** Certainty grid.
+** Certainty grid-related functions.
 */
 
 grid_t * grid_init(int dimension, double resolution) {
@@ -55,6 +76,7 @@ grid_t * grid_init(int dimension, double resolution) {
 	grid_t * grid;
 	grid = (grid_t *)malloc(sizeof(grid_t));
 	
+	/* Is there enough memory for the grid? */
 	if (NULL == grid) return NULL;
 
 	/* Initialize grid's parameters. */
@@ -65,10 +87,11 @@ grid_t * grid_init(int dimension, double resolution) {
 	** Allocate enough memory for the grid (dimension x dimension ints).
 	**
 	** Making this a single allocation is simpler. Also, This *IS* a performance
-	** hack.
+	** hack. Use [i * dim + j] to iterate over it.
 	*/
 	grid->cells = (int *)malloc(dimension * dimension * sizeof(int));
 	
+	/* Is there enough memory for the cells?*/
 	if (NULL == grid->cells) return NULL;
 	
 	/* Initialize all elements to 0. */
@@ -81,14 +104,19 @@ grid_t * grid_init(int dimension, double resolution) {
 	return grid;
 }
 
-void grid_update(grid_t * grid, int current_position_x, int current_position_y, rangefinder_data_t * data, int n) {
+void grid_update(grid_t * grid, int current_position_x, int current_position_y,
+								range_measure_t * data, int n) {
+
 	int i, dim, x_cartesian, y_cartesian;
-	
+
 	dim = grid->dimension;
 	
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
 	** corresponding cell's obstacle density.
+	**
+	** Polar to cartesian:
+	** (r, o) -> (r * cos(x), r * sin(y))
 	*/
 	for (i = 0; i < n; ++i) {
 		x_cartesian = (int) floor(data[i].distance * cos(data[i].direction));
@@ -97,14 +125,17 @@ void grid_update(grid_t * grid, int current_position_x, int current_position_y, 
 		y_cartesian = (int) floor(data[i].distance * sin(data[i].direction));
 		y_cartesian += current_position_y;
 
-		/* Avoiding buffer overflows... */
+		/* Is this position inside the grid? (to avoid overflows) */
 		if (x_cartesian < dim && y_cartesian < dim) {
 			grid->cells[x_cartesian * dim + y_cartesian] += 1;			
 		}
 	}
 }
 
-grid_t * get_moving_window(grid_t * grid, int current_position_x, int current_position_y, int dim) {
+/* TODO */
+grid_t * get_moving_window(grid_t * grid, int current_position_x,
+													int current_position_y, int dim) {
+
 	int i, j; /* Indexes for the moving window. */
 	int grid_i, grid_j; /* Indexes for the grid. */
 	grid_t * moving_window;
@@ -139,17 +170,19 @@ grid_t * get_moving_window(grid_t * grid, int current_position_x, int current_po
 }
 
 /*
-** Polar histogram.
+** Polar histogram-related functions.
 */
 
-hist_t * hist_init(int alpha, double threshold, double velocity_reduction, double density_a, double density_b) {
+hist_t * hist_init(int alpha, double threshold, double velocity_reduction,
+									double density_a, double density_b) {
+
 	int i;
 	
 	/* Create a histogram pointer and allocate memory to it. */
 	hist_t * hist;
 	hist = (hist_t *)malloc(sizeof(hist_t));
 	
-	
+	/* Is there enough memory for the histogram? */
 	if (NULL == hist) return NULL;
 	
 	/* Initialize the histogram parameters. */
@@ -161,6 +194,7 @@ hist_t * hist_init(int alpha, double threshold, double velocity_reduction, doubl
 	/* Allocate the array to hold the obstacle density of each sector. */
 	hist->densities = (int *)malloc(hist->sectors * sizeof(int));
 	
+	/* And is there enough memory for the densities array? */
 	if (NULL == hist->densities) return NULL;
 	
 	/* Initialize all densities to 0. */
@@ -177,7 +211,7 @@ void hist_update(hist_t * hist, grid_t * grid) {
 	double dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
 	double beta, density;
 	
-	dim = grid->dimension;		
+	dim = grid->dimension;
 	dens_a = hist->density_a;
 	dens_b = hist->density_b;
 	
@@ -185,7 +219,7 @@ void hist_update(hist_t * hist, grid_t * grid) {
 	for (i = 0; i < dim; ++i) {
 		for (j = 0; j < dim; ++j) {
 
-			/* Calculate the angular position beta of this cell. */
+			/* Calculate the angular position (beta) of this cell. */
 			beta = atan2((double)(j - dim/2), (double)(i - dim/2));
 			
 			/* Calculate the obstacle density of this cell. */
@@ -199,29 +233,28 @@ void hist_update(hist_t * hist, grid_t * grid) {
 }
 
 /*
-** Control signals.
+** Control signals-related functions.
 */
 
-void control_signals(int * theta, double * vel_multiplier, hist_t * hist, int objective_direction) {
-	*theta = calculate_direction(hist, objective_direction);
-	
-	*vel_multiplier = calculate_vel_damping(hist->densities[*theta],
-		hist->velocity_reduction);
-}
-
-int calculate_direction(hist_t * hist, int obj_direction) {
+int calculate_direction(hist_t * hist, int objective_direction) {
 	int sector, best_direction = -1;
+	int dist_a, dist_b; /* Just to improve readability. TODO: better names. */
 	
 	/*
 	** Search the densities array and return the most similar to the objective
 	** direction that is below the threshold.
 	*/
 	for (sector = 0; sector < hist->sectors; ++sector) {
+		
 		if (hist->densities[sector] < hist->threshold) {
-			if (-1 == best_direction) {
+			
+			dist_a = modular_dist(best_direction*, objective_direction, hist->sectors);
+			dist_b = modular_dist(sector, objective_direction, hist->sectors);
+			
+			/* If dist_a < dist_b, we maintain the current best_direction. */
+			if (-1 == best_direction || dist_b < dist_a) {
+				/* This serves as initialization. */
 				best_direction = sector;
-			} else {
-				best_direction = MIN(abs(best_direction - obj_direction), abs(sector - obj_direction));
 			}
 		}
 	}
@@ -229,6 +262,6 @@ int calculate_direction(hist_t * hist, int obj_direction) {
 	return best_direction;
 }
 
-double calculate_vel_damping(double obstacle_density, double velocity_reduction) {
-	return 1.0 - MIN(obstacle_density, velocity_reduction) / velocity_reduction;
+double calculate_damping(double obstacle_density, double damping_constant) {
+	return 1.0 - (MIN(obstacle_density, damping_constant) / damping_constant);
 }
