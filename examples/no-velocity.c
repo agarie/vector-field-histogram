@@ -49,7 +49,7 @@ int main(void) {
 		
 		if (i < 50)
 			printf("\t%2d: %3d [cm], %3d [degrees]\n", i, measure[i].distance,
-																										measure[i].direction);
+				measure[i].direction);
 	}
 	
 	if (i > 50) printf("\t...\n");
@@ -72,8 +72,7 @@ int main(void) {
 	hist_update(polar_histogram, certainty_grid);
 	
 	/* What's the next direction? */
-	control_signal.direction = calculate_direction(polar_histogram,
-																								BEST_DIRECTION);
+	control_signal.direction = calculate_direction(polar_histogram, BEST_DIRECTION);
 	
 	printf("\nNext direction: %d [degrees]\n", control_signal.direction);
 

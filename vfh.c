@@ -103,7 +103,7 @@ grid_t * grid_init(int dimension, int resolution) {
 }
 
 int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
-								int measurements) {
+		int measurements) {
 
 	if (grid == NULL) return 0;
 	if (grid->cells == NULL) return 0;
@@ -125,10 +125,10 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
 		new_y = pos_y;
 		
 		new_x += (int) floor((data[i].distance / grid->resolution) *
-													cos(data[i].direction * PI / 180));
+			cos(data[i].direction * PI / 180));
 		
 		new_y += (int) floor((data[i].distance / grid->resolution) *
-													sin(data[i].direction * PI / 180));
+			sin(data[i].direction * PI / 180));
 		
 		/* Is this point inside the grid? (to avoid overflows) */
 		if (pos_x < grid->dimension && pos_y < grid->dimension) {
@@ -141,7 +141,7 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
 
 /* TODO: Finish implementing get_moving_window. */
 grid_t * get_moving_window(grid_t * grid, int current_position_x,
-													int current_position_y, int dim) {
+		int current_position_y, int dim) {
 
 	int i, j; /* Indexes for the moving window. */
 	int grid_i, grid_j; /* Indexes for the grid. */
@@ -181,7 +181,7 @@ grid_t * get_moving_window(grid_t * grid, int current_position_x,
 */
 
 hist_t * hist_init(int alpha, double threshold, double density_a,
-									double density_b) {
+		double density_b) {
 
 	int i;
 	

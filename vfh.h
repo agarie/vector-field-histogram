@@ -70,7 +70,7 @@ grid_t * grid_init(int dimension, int resolution);
 
 /* grid_update: Update grid's cells with an array of sensor readings. */
 int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
-								int measurements);
+	int measurements);
 
 /* get_moving_window: Get a sub-grid of the grid centered in (x, y). */
 grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dim);
@@ -79,7 +79,7 @@ grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dim);
 
 /* hist_init: Return a pointer to a new hist. NULL otherwise. */
 hist_t * hist_init(int alpha, double threshold, double density_a,
-									double density_b);
+	double density_b);
 
 /* hist_update: Update hist with grid's information. */
 void hist_update(hist_t * hist, grid_t * grid);
