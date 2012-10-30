@@ -29,21 +29,20 @@ struct range_measure {
 	unsigned long distance; /* [cm] */
 };
 
-/* Control signal created by the algorithm. */
-struct control_signal {
-	int next_direction; /* [degrees] */
-	double damping; /* adimentional */
-};
-
 /* Polar histogram. */
 struct hist {
 	int alpha;
 	int sectors;
 	double threshold;
-	double velocity_reduction;
+	double damping_constant;
 	double density_a;
 	double density_b;
 	int * densities;
+};
+
+/* Control signal created by the algorithm. */
+struct control_signal {
+	int direction; /* [degrees] */
 };
 
 /* Typedefs. */
@@ -62,7 +61,7 @@ typedef struct hist hist_t;
 int modulo(int x, int m);
 
 /* modular_dist: Return the distance between a and b in modular arithmetic. */
-int modular_dist(int a, int b, int modulo)
+int modular_dist(int a, int b, int m);
 
 /* Certainty grid. */
 
@@ -70,20 +69,20 @@ int modular_dist(int a, int b, int modulo)
 grid_t * grid_init(int dimension, double resolution);
 
 /* grid_update: Update grid's cells with an array of n sensor readings. */
-void grid_update(grid_t * grid, int current_position_x, int current_position_y,
-	range_measure_t * data, int n);
+int grid_update(grid_t * grid, int current_position_x, int current_position_y,
+								range_measure_t data[], int measurements);
 
 /* get_moving_window: Get a sub-grid of the grid centered in (x, y). */
 grid_t * get_moving_window(grid_t * grid, int current_position_x,
-	int current_position_y, int dim);
+													int current_position_y, int dim);
 
 /* Polar Histogram. */
 
 /* hist_init: Return a pointer to a new hist. NULL otherwise. */
-hist_t * hist_init(int alpha, double threshold, double vel_reduction,
-	double density_a, double density_b);
+hist_t * hist_init(int alpha, double threshold, double density_a,
+									double density_b);
 
-/* hist_update: Update hist with grid's information. Return 1 if success. */
+/* hist_update: Update hist with grid's information. */
 void hist_update(hist_t * hist, grid_t * grid);
 
 /* Control signals. */
@@ -91,14 +90,8 @@ void hist_update(hist_t * hist, grid_t * grid);
 /*
 ** calculate_direction: Return the sector in hist closest to the objective
 ** direction, given that its obstacle density is less than the threshold
-** specified in hist.
+** specified in hist. The objective_direction is given in DEGREES.
 */
 int calculate_direction(hist_t * hist, int objective_direction);
-
-/*
-** calculate_damping: Return the velocity damping factor, based on the obstacle
-** density of the current sector and a damping constant.
-*/
-double calculate_damping(double obstacle_density, double damping_constant);
 
 #endif

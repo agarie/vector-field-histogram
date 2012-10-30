@@ -14,7 +14,7 @@ I'm going to use this in a project for my real-time systems class at Embry-Riddl
 
 ## How to install
 
-!!!
+Wait.
 
 ## How to use
 
@@ -25,17 +25,14 @@ The rangefinder readings are passed to the certainty grid as an array of `rangef
 Also, there are a lot of necessary parameters:
 
 + Certainty grid dimension (must be odd)
-+ Certainty grid resolution
++ Certainty grid resolution [m]
 + Moving window dimension (must be odd)
-+ Histogram alpha
-+ Density_A
-+ Density_B
-+ Obstacle density threshold
-+ Velocity reduction
-+ Objective position X
-+ Objective position Y
-
-In the future, I'll include an example file showing how to use this library in a project.
++ Histogram alpha (must be a divisor of 360) [degrees]
++ Density_A (experimental)
++ Density_B (experimental)
++ Obstacle density threshold (experimental)
++ Objective position X (per-project)
++ Objective position Y (per-project)
 
 ## License
 

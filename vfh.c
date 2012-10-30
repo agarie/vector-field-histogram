@@ -14,9 +14,8 @@
 
 #include "vfh.h"
 
-/* Guarantee that this is the MIN macro used. */
-#undef MIN
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+/* PI value. */
+#define PI 3.1415926535
 
 /*
 ** These parameters are there to help me remember them, basically.
@@ -38,7 +37,6 @@
 
 /* Parameters for direction and velocity calculations. */
 #define OBSTACLE_DENSITY_THRESHOLD 10
-#define VELOCITY_REDUCTION 30
 	
 /* Where we want to go. */
 #define OBJECTIVE_X 87
@@ -46,21 +44,21 @@
 
 /* Helper functions. */
 
-int modulo(int x, int modulo) {
+int modulo(int x, int m) {
 	/* Source: http://crsouza.blogspot.com/2009/09/modulo-and-modular-distance-in-c.html */
 	int r;
 	
-	if (modulo < 0) modulo = -modulo;
+	if (m < 0) m = -m;
 	
 	r = x % m;
 	return r < 0 ? r + m : r;
 }
 
-int modular_dist(int a, int b, int modulo) {
+int modular_dist(int a, int b, int m) {
 	int dist_a, dist_b;
 	
-	dist_a = modulo(a - b, modulo);
-	dist_b = modulo(b - a, modulo);
+	dist_a = modulo(a - b, m);
+	dist_b = modulo(b - a, m);
 	
 	return dist_a < dist_b? dist_a : dist_b;
 }	
@@ -104,32 +102,36 @@ grid_t * grid_init(int dimension, double resolution) {
 	return grid;
 }
 
-void grid_update(grid_t * grid, int current_position_x, int current_position_y,
-								range_measure_t * data, int n) {
+int grid_update(grid_t * grid, int position_x, int position_y,
+								range_measure_t data[], int measurements) {
 
-	int i, dim, x_cartesian, y_cartesian;
+	if (grid == NULL) return 0;
+	if (grid->cells == NULL) return 0;
 
-	dim = grid->dimension;
-	
+	int i;
+
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
 	** corresponding cell's obstacle density.
 	**
 	** Polar to cartesian:
 	** (r, o) -> (r * cos(x), r * sin(y))
+	**
+	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
 	*/
-	for (i = 0; i < n; ++i) {
-		x_cartesian = (int) floor(data[i].distance * cos(data[i].direction));
-		x_cartesian += current_position_x;
+	for (i = 0; i < measurements; ++i) {
+		position_x += (int) floor(data[i].distance * cos(data[i].direction * PI / 180));
 		
-		y_cartesian = (int) floor(data[i].distance * sin(data[i].direction));
-		y_cartesian += current_position_y;
+		position_y += (int) floor(data[i].distance * sin(data[i].direction * PI / 180));
 
 		/* Is this position inside the grid? (to avoid overflows) */
-		if (x_cartesian < dim && y_cartesian < dim) {
-			grid->cells[x_cartesian * dim + y_cartesian] += 1;			
+		/* TODO: WTF IS WRONG WITH THIS? */
+		if (position_x < grid->dimension && position_y < grid->dimension) {
+			grid->cells[position_x * grid->dimension + position_y] += 1;
 		}
 	}
+	
+	return 1;
 }
 
 /* TODO */
@@ -173,8 +175,8 @@ grid_t * get_moving_window(grid_t * grid, int current_position_x,
 ** Polar histogram-related functions.
 */
 
-hist_t * hist_init(int alpha, double threshold, double velocity_reduction,
-									double density_a, double density_b) {
+hist_t * hist_init(int alpha, double threshold, double density_a,
+									double density_b) {
 
 	int i;
 	
@@ -189,7 +191,6 @@ hist_t * hist_init(int alpha, double threshold, double velocity_reduction,
 	hist->alpha = alpha;
 	hist->sectors = 360 / alpha;
 	hist->threshold = threshold;
-	hist->velocity_reduction = velocity_reduction;
 	
 	/* Allocate the array to hold the obstacle density of each sector. */
 	hist->densities = (int *)malloc(hist->sectors * sizeof(int));
@@ -210,7 +211,7 @@ void hist_update(hist_t * hist, grid_t * grid) {
 	int dim; /* grid's dimension. */
 	double dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
 	double beta, density;
-	
+		
 	dim = grid->dimension;
 	dens_a = hist->density_a;
 	dens_b = hist->density_b;
@@ -240,6 +241,9 @@ int calculate_direction(hist_t * hist, int objective_direction) {
 	int sector, best_direction = -1;
 	int dist_a, dist_b; /* Just to improve readability. TODO: better names. */
 	
+	/* The objective_direction is given in DEGREES and mapped to a sector. */
+	objective_direction = (int) floor(objective_direction / hist->alpha);
+	
 	/*
 	** Search the densities array and return the most similar to the objective
 	** direction that is below the threshold.
@@ -248,7 +252,7 @@ int calculate_direction(hist_t * hist, int objective_direction) {
 		
 		if (hist->densities[sector] < hist->threshold) {
 			
-			dist_a = modular_dist(best_direction*, objective_direction, hist->sectors);
+			dist_a = modular_dist(best_direction, objective_direction, hist->sectors);
 			dist_b = modular_dist(sector, objective_direction, hist->sectors);
 			
 			/* If dist_a < dist_b, we maintain the current best_direction. */
@@ -259,9 +263,6 @@ int calculate_direction(hist_t * hist, int objective_direction) {
 		}
 	}
 	
-	return best_direction;
-}
-
-double calculate_damping(double obstacle_density, double damping_constant) {
-	return 1.0 - (MIN(obstacle_density, damping_constant) / damping_constant);
+	/* Map the best_direction into degrees. */
+	return (int) floor(best_direction * hist->alpha);
 }
