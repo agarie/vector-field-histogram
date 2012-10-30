@@ -67,7 +67,7 @@ int modular_dist(int a, int b, int m) {
 ** Certainty grid-related functions.
 */
 
-grid_t * grid_init(int dimension, double resolution) {
+grid_t * grid_init(int dimension, int resolution) {
 	int i, j;
 	
 	/* Create a grid pointer and allocate memory to it. */
@@ -77,10 +77,10 @@ grid_t * grid_init(int dimension, double resolution) {
 	/* Is there enough memory for the grid? */
 	if (NULL == grid) return NULL;
 
-	/* Initialize grid's parameters. */
-	grid->dimension = dimension;
+	/* Initialize grid's parameters. Guarantee that dimension is odd. */
+	grid->dimension = dimension % 2 == 0 ? dimension + 1 : dimension;
 	grid->resolution = resolution;
-	
+		
 	/*
 	** Allocate enough memory for the grid (dimension x dimension ints).
 	**
@@ -102,13 +102,13 @@ grid_t * grid_init(int dimension, double resolution) {
 	return grid;
 }
 
-int grid_update(grid_t * grid, int position_x, int position_y,
-								range_measure_t data[], int measurements) {
+int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
+								int measurements) {
 
 	if (grid == NULL) return 0;
 	if (grid->cells == NULL) return 0;
 
-	int i;
+	int i, new_x, new_y;
 
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
@@ -120,21 +120,26 @@ int grid_update(grid_t * grid, int position_x, int position_y,
 	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
 	*/
 	for (i = 0; i < measurements; ++i) {
-		position_x += (int) floor(data[i].distance * cos(data[i].direction * PI / 180));
+		/* Initialize the offset of the point i. */
+		new_x = pos_x;
+		new_y = pos_y;
 		
-		position_y += (int) floor(data[i].distance * sin(data[i].direction * PI / 180));
-
-		/* Is this position inside the grid? (to avoid overflows) */
-		/* TODO: WTF IS WRONG WITH THIS? */
-		if (position_x < grid->dimension && position_y < grid->dimension) {
-			grid->cells[position_x * grid->dimension + position_y] += 1;
+		new_x += (int) floor((data[i].distance / grid->resolution) *
+													cos(data[i].direction * PI / 180));
+		
+		new_y += (int) floor((data[i].distance / grid->resolution) *
+													sin(data[i].direction * PI / 180));
+		
+		/* Is this point inside the grid? (to avoid overflows) */
+		if (pos_x < grid->dimension && pos_y < grid->dimension) {
+			grid->cells[pos_x * grid->dimension + pos_y] += 1;
 		}
 	}
 	
 	return 1;
 }
 
-/* TODO */
+/* TODO: Finish implementing get_moving_window. */
 grid_t * get_moving_window(grid_t * grid, int current_position_x,
 													int current_position_y, int dim) {
 
@@ -237,9 +242,10 @@ void hist_update(hist_t * hist, grid_t * grid) {
 ** Control signals-related functions.
 */
 
+/* TODO: Improve the the direction calculation. Re-read the paper. */
 int calculate_direction(hist_t * hist, int objective_direction) {
 	int sector, best_direction = -1;
-	int dist_a, dist_b; /* Just to improve readability. TODO: better names. */
+	int dist_a, dist_b; /* Just to improve readability. FIXME: Better names. */
 	
 	/* The objective_direction is given in DEGREES and mapped to a sector. */
 	objective_direction = (int) floor(objective_direction / hist->alpha);

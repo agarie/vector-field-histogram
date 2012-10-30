@@ -12,8 +12,8 @@
 
 #include "../vfh.h"
 
-#define MEASUREMENTS 1000
-#define BEST_DIRECTION 75 /* [degrees] */
+#define MEASUREMENTS 10000
+#define BEST_DIRECTION 90 /* [degrees] */
 
 int main(void) {
 	int i, position_x, position_y;
@@ -28,7 +28,7 @@ int main(void) {
 	** Initialization of the grid and the histogram.
 	*/
 
-	certainty_grid = grid_init(11, 0.2);
+	certainty_grid = grid_init(50, 10);
 	polar_histogram = hist_init(2, 20, 10, 5);
 	
 	/* Are the initializations ok? */
@@ -44,7 +44,7 @@ int main(void) {
 	printf("Measures\n");
 		
 	for (i = 0; i < MEASUREMENTS; ++i) {
-		measure[i].direction = (int) ((360.0 * rand()) / RAND_MAX) ; /* [degrees] */
+		measure[i].direction = (int) ((360.0 * rand()) / RAND_MAX); /* [degrees] */
 		measure[i].distance = (int) (((130.0 * rand()) / RAND_MAX) + 20); /* [cm] */
 		
 		if (i < 50)
@@ -56,6 +56,8 @@ int main(void) {
 
 	/* Let's assume the 'robot' is in the middle of the grid. */
 	position_x = position_y = (certainty_grid->dimension + 1) / 2;
+
+	printf("\nPosition of the robot: (%d, %d)\n", position_x, position_y);
 
 	/* Add the information from the measures to the grid. */
 	printf("\nUpdating the certainty grid...\n");

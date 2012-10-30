@@ -19,14 +19,14 @@
 /* Certainty grid. */
 struct grid {
 	int dimension;
-	double resolution;
+	int resolution;
 	int *cells;
 };
 
 /* A rangefinder measurement. */
 struct range_measure {
 	int direction; /* [degrees] */
-	unsigned long distance; /* [cm] */
+	int distance; /* [cm] */
 };
 
 /* Polar histogram. */
@@ -66,15 +66,14 @@ int modular_dist(int a, int b, int m);
 /* Certainty grid. */
 
 /* grid_init: Return a pointer to an empty grid. NULL otherwise. */
-grid_t * grid_init(int dimension, double resolution);
+grid_t * grid_init(int dimension, int resolution);
 
-/* grid_update: Update grid's cells with an array of n sensor readings. */
-int grid_update(grid_t * grid, int current_position_x, int current_position_y,
-								range_measure_t data[], int measurements);
+/* grid_update: Update grid's cells with an array of sensor readings. */
+int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
+								int measurements);
 
 /* get_moving_window: Get a sub-grid of the grid centered in (x, y). */
-grid_t * get_moving_window(grid_t * grid, int current_position_x,
-													int current_position_y, int dim);
+grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dim);
 
 /* Polar Histogram. */
 

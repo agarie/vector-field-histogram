@@ -24,9 +24,9 @@ The rangefinder readings are passed to the certainty grid as an array of `rangef
 
 Also, there are a lot of necessary parameters:
 
-+ Certainty grid dimension (must be odd)
-+ Certainty grid resolution [m]
-+ Moving window dimension (must be odd)
++ Certainty grid dimension (if it's even, it'll be incremented by 1)
++ Certainty grid resolution [cm]
++ Moving window dimension (same as certainty grid dimension)
 + Histogram alpha (must be a divisor of 360) [degrees]
 + Density_A (experimental)
 + Density_B (experimental)
