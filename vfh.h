@@ -12,9 +12,11 @@
 #ifndef VFH_H
 #define VFH_H
 
-/*
+/*********************
+**
 ** Struct definitions.
-*/
+**
+*********************/
 
 /* Certainty grid. */
 struct grid {
@@ -26,7 +28,7 @@ struct grid {
 /* A rangefinder measurement. */
 struct range_measure {
 	int direction; /* [degrees] */
-	int distance; /* [cm] */
+	unsigned long distance; /* [cm] */
 };
 
 /* Polar histogram. */
@@ -45,15 +47,20 @@ struct control_signal {
 	int direction; /* [degrees] */
 };
 
-/* Typedefs. */
+/***********
+**
+** Typedefs.
+**
+***********/
+
 typedef struct grid grid_t;
 typedef struct range_measure range_measure_t;
 typedef struct control_signal control_signal_t;
 typedef struct hist hist_t;
 
-/*
+/**********************
 ** Function prototypes.
-*/
+**********************/
 
 /* Helpers. */
 
@@ -69,8 +76,7 @@ int modular_dist(int a, int b, int m);
 grid_t * grid_init(int dimension, int resolution);
 
 /* grid_update: Update grid's cells with an array of sensor readings. */
-int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
-	int measurements);
+int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data);
 
 /* get_moving_window: Get a sub-grid of the grid centered in (x, y). */
 grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dim);

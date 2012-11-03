@@ -13,7 +13,7 @@
 #include "../vfh.h"
 
 #define MEASUREMENTS 10000
-#define BEST_DIRECTION 90 /* [degrees] */
+#define OBJECTIVE_DIRECTION 90 /* [degrees] */
 
 int main(void) {
 	int i, position_x, position_y;
@@ -48,7 +48,7 @@ int main(void) {
 		measure[i].distance = (int) (((130.0 * rand()) / RAND_MAX) + 20); /* [cm] */
 		
 		if (i < 50)
-			printf("\t%2d: %3d [cm], %3d [degrees]\n", i, measure[i].distance,
+			printf("\t%2d: %3d [cm], %3d [degrees]\n", i, (int) measure[i].distance,
 				measure[i].direction);
 	}
 	
@@ -61,7 +61,9 @@ int main(void) {
 
 	/* Add the information from the measures to the grid. */
 	printf("\nUpdating the certainty grid...\n");
-	grid_update(certainty_grid, position_x, position_y, measure, MEASUREMENTS);
+	for (i = 0; i < MEASUREMENTS; ++i) {
+		grid_update(certainty_grid, position_x, position_y, measure[i]);
+	}
 		
 	/*
 	** Calculating the control signals.
@@ -72,7 +74,7 @@ int main(void) {
 	hist_update(polar_histogram, certainty_grid);
 	
 	/* What's the next direction? */
-	control_signal.direction = calculate_direction(polar_histogram, BEST_DIRECTION);
+	control_signal.direction = calculate_direction(polar_histogram, OBJECTIVE_DIRECTION);
 	
 	printf("\nNext direction: %d [degrees]\n", control_signal.direction);
 

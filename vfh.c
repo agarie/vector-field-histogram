@@ -17,9 +17,7 @@
 /* PI value. */
 #define PI 3.1415926535
 
-/*
-** These parameters are there to help me remember them, basically.
-*/
+/* These parameters are there to help me remember them, basically. */
 
 /* Parameters for the grid. */
 #define DIM 11 /* Must be an odd number. */
@@ -39,8 +37,7 @@
 #define OBSTACLE_DENSITY_THRESHOLD 10
 	
 /* Where we want to go. */
-#define OBJECTIVE_X 87
-#define OBJECTIVE_Y 87	
+#define OBJECTIVE_DIRECTION 90
 
 /* Helper functions. */
 
@@ -63,9 +60,11 @@ int modular_dist(int a, int b, int m) {
 	return dist_a < dist_b? dist_a : dist_b;
 }	
 
-/*
+/***********************************
+**
 ** Certainty grid-related functions.
-*/
+**
+***********************************/
 
 grid_t * grid_init(int dimension, int resolution) {
 	int i, j;
@@ -102,13 +101,12 @@ grid_t * grid_init(int dimension, int resolution) {
 	return grid;
 }
 
-int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
-		int measurements) {
+int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 
 	if (grid == NULL) return 0;
 	if (grid->cells == NULL) return 0;
 
-	int i, new_x, new_y;
+	int new_x, new_y;
 
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
@@ -119,21 +117,19 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data[],
 	**
 	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
 	*/
-	for (i = 0; i < measurements; ++i) {
-		/* Initialize the offset of the point i. */
-		new_x = pos_x;
-		new_y = pos_y;
+	/* Initialize the offset of the point i. */
+	new_x = pos_x;
+	new_y = pos_y;
 		
-		new_x += (int) floor((data[i].distance / grid->resolution) *
-			cos(data[i].direction * PI / 180));
+	new_x += (int) floor((data.distance / grid->resolution) *
+		cos(data.direction * PI / 180));
 		
-		new_y += (int) floor((data[i].distance / grid->resolution) *
-			sin(data[i].direction * PI / 180));
+	new_y += (int) floor((data.distance / grid->resolution) *
+		sin(data.direction * PI / 180));
 		
-		/* Is this point inside the grid? (to avoid overflows) */
-		if (pos_x < grid->dimension && pos_y < grid->dimension) {
-			grid->cells[pos_x * grid->dimension + pos_y] += 1;
-		}
+	/* Is this point inside the grid? (to avoid overflows) */
+	if (pos_x < grid->dimension && pos_y < grid->dimension) {
+		grid->cells[pos_x * grid->dimension + pos_y] += 1;
 	}
 	
 	return 1;
@@ -176,9 +172,11 @@ grid_t * get_moving_window(grid_t * grid, int current_position_x,
 	return moving_window;
 }
 
-/*
+/************************************
+**
 ** Polar histogram-related functions.
-*/
+**
+************************************/
 
 hist_t * hist_init(int alpha, double threshold, double density_a,
 		double density_b) {
@@ -238,14 +236,16 @@ void hist_update(hist_t * hist, grid_t * grid) {
 	}
 }
 
-/*
+/************************************
+**
 ** Control signals-related functions.
-*/
+**
+************************************/
 
-/* TODO: Improve the the direction calculation. Re-read the paper. */
+/* TODO: Improve the direction calculation. Re-read the paper. */
 int calculate_direction(hist_t * hist, int objective_direction) {
 	int sector, best_direction = -1;
-	int dist_a, dist_b; /* Just to improve readability. FIXME: Better names. */
+	int dist_best_and_obj, dist_sector_and_obj; /* Just to improve readability. */
 	
 	/* The objective_direction is given in DEGREES and mapped to a sector. */
 	objective_direction = (int) floor(objective_direction / hist->alpha);
@@ -258,11 +258,11 @@ int calculate_direction(hist_t * hist, int objective_direction) {
 		
 		if (hist->densities[sector] < hist->threshold) {
 			
-			dist_a = modular_dist(best_direction, objective_direction, hist->sectors);
-			dist_b = modular_dist(sector, objective_direction, hist->sectors);
+			dist_best_and_obj = modular_dist(best_direction, objective_direction, hist->sectors);
+			dist_sector_and_obj = modular_dist(sector, objective_direction, hist->sectors);
 			
-			/* If dist_a < dist_b, we maintain the current best_direction. */
-			if (-1 == best_direction || dist_b < dist_a) {
+			/* If dist_a < dist_sector_and_obj, we maintain the current best_direction. */
+			if (-1 == best_direction || dist_sector_and_obj < dist_best_and_obj) {
 				/* This serves as initialization. */
 				best_direction = sector;
 			}
