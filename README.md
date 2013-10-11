@@ -2,8 +2,9 @@
 
 This is an implementation of the [Vector Field Histogram](http://en.wikipedia.org/wiki/Vector_Field_Histogram) algorithm, developed by J. Borenstein and Y.Koren in 1990.
 
-I'm going to use this in a project for my real-time systems class at Embry-Riddle Aeronautical University, where we're using ARM microcontrollers. That explains why this is a C implementation (I also don't like C++).
+I used this in a project for my real-time systems class at Embry-Riddle Aeronautical University.
 
+Eventually, I'll add support to the VFH+ and VFH-star algorithms.
 ## To do
 
 + Complete the parameter list with descriptions.
@@ -15,6 +16,14 @@ I'm going to use this in a project for my real-time systems class at Embry-Riddl
 ## How to install
 
 Wait.
+
+It should be as easy as:
+
+```bash
+git clone <url for this repo>
+cd vector-field-histogram
+make
+```
 
 ## How to use
 

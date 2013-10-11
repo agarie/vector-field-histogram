@@ -128,8 +128,8 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 		sin(data.direction * PI / 180));
 
 	/* Is this point inside the grid? (to avoid overflows) */
-	if (pos_x < grid->dimension && pos_y < grid->dimension) {
-		grid->cells[pos_x * grid->dimension + pos_y] += 1;
+	if (new_x < grid->dimension && new_y < grid->dimension) {
+		grid->cells[new_x * grid->dimension + new_y] += 1;
 	}
 
 	return 1;
