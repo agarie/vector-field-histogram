@@ -7,7 +7,8 @@ CPP=g++
 $(P): $(OBJECTS)
 
 example:
-	
+
+test:
 
 clean:
 	rm no-velocity vfh.o
