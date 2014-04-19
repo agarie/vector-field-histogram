@@ -1,8 +1,7 @@
 P=vfh
 OBJECTS= vfh.o
 CPPFLAGS= -g -Wall -I. -O3 -gstabs
-LDLIBS= -lm -lopencv_core -lopencv_highgui -lopencv_imgproc
-CPP=g++
+LDLIBS= -lm
 
 $(P): $(OBJECTS)
 
