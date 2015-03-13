@@ -14,8 +14,6 @@
 
 #include "vfh.h"
 
-/* These parameters are there to help me remember them, basically. */
-
 /* Parameters for the grid. */
 #define DIM 11 /* Must be an odd number. */
 #define CERTAINTY_GRID_RESOLUTION 0.1
@@ -49,10 +47,8 @@ int modulo(int x, int m) {
 }
 
 int modular_dist(int a, int b, int m) {
-	int dist_a, dist_b;
-
-	dist_a = modulo(a - b, m);
-	dist_b = modulo(b - a, m);
+	int dist_a = modulo(a - b, m);
+	int dist_b = modulo(b - a, m);
 
 	return dist_a < dist_b? dist_a : dist_b;
 }
@@ -72,6 +68,9 @@ grid_t * grid_init(int dimension, int resolution) {
 
 	/* Is there enough memory for the grid? */
 	if (NULL == grid) return NULL;
+
+  // TODO: Add `assert` calls to guarantee that dimension is odd.
+  // TODO: Also `assert` that the resolution is within some reasonable values (???).
 
 	/* Initialize grid's parameters. Guarantee that dimension is odd. */
 	grid->dimension = dimension % 2 == 0 ? dimension + 1 : dimension;
@@ -108,8 +107,7 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
 	** corresponding cell's obstacle density.
-	**
-	** Polar to cartesian:
+	** ** Polar to cartesian:
 	** (r, o) -> (r * cos(x), r * sin(y))
 	**
 	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
@@ -178,14 +176,14 @@ grid_t * get_moving_window(grid_t * grid, int current_position_x,
 hist_t * hist_init(int alpha, double threshold, double density_a,
 		double density_b) {
 
-	int i;
-
 	/* Create a histogram pointer and allocate memory to it. */
 	hist_t * hist;
 	hist = (hist_t *)malloc(sizeof(hist_t));
 
 	/* Is there enough memory for the histogram? */
 	if (NULL == hist) return NULL;
+
+  // TODO: `assert` that alpha is a divider of 360.
 
 	/* Initialize the histogram parameters. */
 	hist->alpha = alpha;
@@ -199,7 +197,7 @@ hist_t * hist_init(int alpha, double threshold, double density_a,
 	if (NULL == hist->densities) return NULL;
 
 	/* Initialize all densities to 0. */
-	for (i = 0; i < hist->sectors; ++i) {
+	for (int i = 0; i < hist->sectors; ++i) {
 		hist->densities[i] = 0;
 	}
 
@@ -207,7 +205,6 @@ hist_t * hist_init(int alpha, double threshold, double density_a,
 }
 
 void hist_update(hist_t * hist, grid_t * grid) {
-	int i, j;
 	int dim; /* grid's dimension. */
 	double dens_a, dens_b; /* parameters 'a' and 'b' for density calculation. */
 	double beta, density;
@@ -217,8 +214,8 @@ void hist_update(hist_t * hist, grid_t * grid) {
 	dens_b = hist->density_b;
 
 	/* Calculate densities based on grid. */
-	for (i = 0; i < dim; ++i) {
-		for (j = 0; j < dim; ++j) {
+	for (int i = 0; i < dim; ++i) {
+		for (int j = 0; j < dim; ++j) {
 
 			/* Calculate the angular position (beta) of this cell. */
 			beta = atan2((double)(j - dim/2), (double)(i - dim/2));
