@@ -14,9 +14,6 @@
 
 #include "vfh.h"
 
-/* PI value. */
-#define PI 3.1415926535
-
 /* These parameters are there to help me remember them, basically. */
 
 /* Parameters for the grid. */
@@ -122,10 +119,10 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 	new_y = pos_y;
 
 	new_x += (int) floor((data.distance / grid->resolution) *
-		cos(data.direction * PI / 180));
+		cos(data.direction * M_PI / 180));
 
 	new_y += (int) floor((data.distance / grid->resolution) *
-		sin(data.direction * PI / 180));
+		sin(data.direction * M_PI / 180));
 
 	/* Is this point inside the grid? (to avoid overflows) */
 	if (new_x < grid->dimension && new_y < grid->dimension) {
