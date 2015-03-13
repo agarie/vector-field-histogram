@@ -1,7 +1,7 @@
 TARGET=vfh
 OBJECTS= vfh.o
 CC=gcc
-CFLAGS= -c -g -Wall -I. -O3
+CFLAGS= -c -g -Wall -pedantic -I. -O3 -std=c99
 LDLIBS= -lm
 
 all: static
