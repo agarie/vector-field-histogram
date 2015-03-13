@@ -4,13 +4,11 @@ CC=gcc
 CFLAGS= -c -g -Wall -I. -O3
 LDLIBS= -lm
 
-all: $(TARGET)
+all: static
 
-$(TARGET): $(OBJECTS)
-
-example:
-
-test:
+static:
+	$(CC) $(CFLAGS) vfh.c -o vfh.o
+	ar rcs libvfh.a vfh.o
 
 clean:
-	rm no-velocity vfh.o
+	rm vfh.o libvfh.a
