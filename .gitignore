@@ -1,2 +1,3 @@
-vfh
-no-velocity
+*.o
+*.a
+*.dylib

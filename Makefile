@@ -1,9 +1,12 @@
-P=vfh
+TARGET=vfh
 OBJECTS= vfh.o
-CPPFLAGS= -g -Wall -I. -O3 -gstabs
+CC=gcc
+CFLAGS= -c -g -Wall -I. -O3
 LDLIBS= -lm
 
-$(P): $(OBJECTS)
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
 
 example:
 
