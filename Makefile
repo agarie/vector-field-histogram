@@ -1,7 +1,7 @@
 TARGET=vfh
 OBJECTS=histogram_grid.o polar_histogram.o vfh.o
 CC=gcc
-CFLAGS=-I. -g -Wall -O3 -std=c99
+CFLAGS=-I. -g -Wall -O3 -std=c99 -D_XOPEN_SOURCE=500
 LDFLAGS=-I.
 LDLIBS=-lm
 
