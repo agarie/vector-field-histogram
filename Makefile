@@ -1,18 +1,20 @@
 TARGET=vfh
-OBJECTS=vfh.o
+OBJECTS=histogram_grid.o polar_histogram.o vfh.o
 CC=gcc
-CFLAGS=-c -g -Wall -O3
-LDFLAGS=-lm
-INCLUDES=-I.
+CFLAGS=-I. -g -Wall -O3 -std=c99
+LDFLAGS=-I.
+LDLIBS=-lm
 
-# all: $(OBJECTS)
-$(TARGET): $(OBJECTS)
+all: $(OBJECTS)
 
 %.o: %.c
-	@echo "Compiling $<..."
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-vfh.c: vfh.h
+vfh.c: vfh.h histogram_grid.h polar_histogram.h
+
+histogram_grid.c: histogram_grid.h
+
+polar_histogram.c: polar_histogram.h histogram_grid.h
 
 clean:
 	rm $(OBJECTS)
