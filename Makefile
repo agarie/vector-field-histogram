@@ -1,14 +1,18 @@
 TARGET=vfh
-OBJECTS= vfh.o
+OBJECTS=vfh.o
 CC=gcc
-CFLAGS= -c -g -Wall -I. -O3 -std=c99
-LDLIBS= -lm
+CFLAGS=-c -g -Wall -O3
+LDFLAGS=-lm
+INCLUDES=-I.
 
-all: static
+# all: $(OBJECTS)
+$(TARGET): $(OBJECTS)
 
-static:
-	$(CC) $(CFLAGS) $(LDLIBS) vfh.c -o vfh.o
-	ar rcs libvfh.a vfh.o
+%.o: %.c
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) $< -o $@
+
+vfh.c: vfh.h
 
 clean:
-	rm vfh.o libvfh.a
+	rm $(OBJECTS)
