@@ -17,27 +17,7 @@
 
 #include "vfh.h"
 
-/* Parameters for the grid. */
-#define DIM 11 /* Must be an odd number. */
-#define CERTAINTY_GRID_RESOLUTION 0.1
-
-/* Parameters for the moving window. */
-#define WINDOW_DIM 5
-
-/* Parameters for histogram calculation. */
-#define ALPHA 5
-
-/* Parameters for density calculation. */
-#define DENSITY_A 10
-#define DENSITY_B 5
-
-/* Parameters for direction and velocity calculations. */
-#define OBSTACLE_DENSITY_THRESHOLD 10
-
-/* Where we want to go. */
-#define OBJECTIVE_DIRECTION 90
-
-/* Helper functions. */
+/* Helpers. */
 
 int modulo(int x, int m) {
 	/* Source: http://crsouza.blogspot.com/2009/09/modulo-and-modular-distance-in-c.html */
@@ -57,24 +37,22 @@ int modular_dist(int a, int b, int m) {
 }
 
 
-/************************************
-**
-** Control signals-related functions.
-**
-************************************/
+//
+// Control signals.
+//
 
 /* TODO: Improve the direction calculation. Re-read the paper. */
 int calculate_direction(hist_t * hist, int objective_direction) {
 	int sector, best_direction = -1;
 	int dist_best_and_obj, dist_sector_and_obj; /* Just to improve readability. */
 
-	/* The objective_direction is given in DEGREES and mapped to a sector. */
+  // The objective_direction is given in DEGREES and mapped to a sector.
 	objective_direction = (int) floor(objective_direction / hist->alpha);
 
-	/*
-	** Search the densities array and return the most similar to the objective
-	** direction that is below the threshold.
-	*/
+
+	// Search the densities array and return the most similar to the objective
+	// direction that is below the threshold.
+
 	for (sector = 0; sector < hist->sectors; ++sector) {
 
 		if (hist->densities[sector] < hist->threshold) {

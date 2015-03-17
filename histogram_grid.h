@@ -2,20 +2,17 @@
 #define HISTOGRAM_GRID_H
 
 /* Certainty grid. */
-struct grid {
+typedef struct grid {
 	int dimension;
 	int resolution;
 	int *cells;
-};
+} grid_t;
 
 /* A rangefinder measurement. */
-struct range_measure {
+typedef struct range_measure {
 	int direction; /* [degrees] */
 	unsigned long distance; /* [cm] */
-};
-
-typedef struct grid grid_t;
-typedef struct range_measure range_measure_t;
+} range_measure_t;
 
 /* Certainty grid. */
 
