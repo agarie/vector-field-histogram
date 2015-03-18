@@ -1,5 +1,6 @@
-#include <stdlib.h>
+#include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "histogram_grid.h"
 
@@ -15,11 +16,11 @@ grid_t * grid_init(int dimension, int resolution) {
 
 	if (NULL == grid) return NULL;
 
-  // TODO: Add `assert` calls to guarantee that dimension is odd.
   // TODO: Also `assert` that the resolution is within some reasonable values (???).
+  assert(dimension % 2 == 1);
 
 	/* Initialize grid's parameters. Guarantee that dimension is odd. */
-	grid->dimension = dimension % 2 == 0 ? dimension + 1 : dimension;
+	grid->dimension = dimension;
 	grid->resolution = resolution;
 
 	/*
