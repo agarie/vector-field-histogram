@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/agarie/vector-field-histogram.svg?branch=master)](https://travis-ci.org/agarie/vector-field-histogram)
 
-This is an implementation of the [Vector Field Histogram](http://en.wikipedia.org/wiki/Vector_Field_Histogram) algorithm, developed by J. Borenstein and Y.Koren in 1990.
+This is an implementation of the [Vector Field Histogram](http://en.wikipedia.org/wiki/Vector_Field_Histogram) algorithm, developed by J. Borenstein and Y. Koren in 1990.
 
 I used this in a project for my real-time systems class at Embry-Riddle Aeronautical University.
 
