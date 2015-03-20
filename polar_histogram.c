@@ -29,7 +29,10 @@ hist_t * hist_init(int alpha, double threshold, double density_a,
 	hist->densities = (int *)malloc(hist->sectors * sizeof(int));
 
 	/* And is there enough memory for the densities array? */
-	if (NULL == hist->densities) return NULL;
+	if (NULL == hist->densities) {
+		free(hist);
+		return NULL;
+	}
 
 	/* Initialize all densities to 0. */
 	for (int i = 0; i < hist->sectors; ++i) {
