@@ -23,5 +23,5 @@ grid_t * grid_init(int dimension, int resolution);
 int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data);
 
 /* get_moving_window: Get a sub-grid of the grid centered in (x, y). */
-grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dim);
+grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dimension);
 #endif

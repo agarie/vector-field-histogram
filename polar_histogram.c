@@ -8,9 +8,7 @@
 // Polar histogram-related functions.
 //
 
-hist_t * hist_init(int alpha, double threshold, double density_a,
-    double density_b) {
-
+hist_t * hist_init(int alpha, double threshold, double density_a, double density_b) {
   /* Create a histogram pointer and allocate memory to it. */
   hist_t * hist = malloc(sizeof(hist_t));
 

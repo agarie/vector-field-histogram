@@ -65,37 +65,34 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 }
 
 /* TODO: Finish implementing get_moving_window. */
-grid_t * get_moving_window(grid_t * grid, int current_position_x,
-    int current_position_y, int dim) {
-
-  int i, j; /* Indexes for the moving window. */
-  int grid_i, grid_j; /* Indexes for the grid. */
-  grid_t * moving_window;
-
+grid_t * get_moving_window(grid_t * grid, int current_x, int current_y, int dimension) {
   /*
-  ** Create a window with dimension dim and the same resolution as grid.
+  ** Create a window with dimension `dimension` and the same resolution as grid.
   **
   ** If grid_init returns NULL, exit the function.
   */
-  moving_window = grid_init(dim, grid->resolution);
+  grid_t * moving_window = grid_init(dimension, grid->resolution);
 
-  if (NULL != moving_window) {
+  if (moving_window != NULL) {
 
     /* Populate moving_window's cells with the values of the ones in grid. */
-    for (i = 0; i < dim; ++i) {
-      for (j = 0; j < dim; ++j) {
+    // TODO: Probably it is best to point directly to the values in the original grid?
+    for (int i = 0; i < dimension; ++i) {
+      for (int j = 0; j < dimension; ++j) {
 
         /* x and y are the center coordinates of the body with sensors. */
-        grid_i = i + current_position_x + (dim - 1) / 2;
-        grid_j = j + current_position_y + (dim - 1) / 2;
+        int grid_i = i + current_x + (dimension - 1) / 2;
+        int grid_j = j + current_y + (dimension - 1) / 2;
 
         /* Copy the information from the grid to the moving window. */
         if (grid_i < grid->dimension && grid_j < grid->dimension) {
-          moving_window->cells[i * dim + j] = grid->cells[grid_i *
-            grid->dimension + grid_j];
+          moving_window->cells[i * dimension + j] = grid->cells[grid_i * grid->dimension + grid_j];
         }
       }
     }
+  } else {
+    free(moving_window);
+    return NULL;
   }
 
   return moving_window;
