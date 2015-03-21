@@ -13,11 +13,9 @@
 #define VFH_H
 
 /* Control signal created by the algorithm. */
-struct control_signal {
+typedef struct {
 	int direction; /* [degrees] */
-};
-
-typedef struct control_signal control_signal_t;
+} control_signal_t;
 
 /* Helpers. */
 

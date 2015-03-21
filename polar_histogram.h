@@ -1,5 +1,5 @@
 /* Polar histogram. */
-struct hist {
+typedef struct {
 	int alpha;
 	int sectors;
 	double threshold;
@@ -7,9 +7,7 @@ struct hist {
 	double density_a;
 	double density_b;
 	int * densities;
-};
-
-typedef struct hist hist_t;
+} hist_t;
 
 /* Polar Histogram. */
 

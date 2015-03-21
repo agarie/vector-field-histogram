@@ -9,33 +9,28 @@
 //
 
 grid_t * grid_init(int dimension, int resolution) {
-	int i, j;
-
-	grid_t * grid;
-	grid = (grid_t *)malloc(sizeof(grid_t));
-
-	if (NULL == grid) return NULL;
-
   // TODO: Also `assert` that the resolution is within some reasonable values (???).
   assert(dimension % 2 == 1);
 
-	/* Initialize grid's parameters. Guarantee that dimension is odd. */
+	grid_t * grid = malloc(sizeof(grid_t));
+
+	if (grid == NULL) {
+    free(grid);
+    return NULL;
+  }
+
 	grid->dimension = dimension;
 	grid->resolution = resolution;
+	grid->cells = malloc(dimension * dimension * sizeof(int));
 
-	/*
-	** Allocate enough memory for the grid (dimension x dimension ints).
-	**
-	** Making this a single allocation is simpler. Also, This *IS* a performance
-	** hack. Use [i * dim + j] to iterate over it.
-	*/
-	grid->cells = (int *)malloc(dimension * dimension * sizeof(int));
-
-	if (NULL == grid->cells) return NULL;
+	if (grid->cells == NULL) {
+    free(grid->cells);
+    return NULL;
+  }
 
   // Initial value, C_0 = 0.
-	for (i = 0; i < dimension; ++i) {
-		for (j = 0; j < dimension; ++j) {
+	for (int i = 0; i < dimension; ++i) {
+		for (int j = 0; j < dimension; ++j) {
 			grid->cells[i * dimension + j] = 0;
 		}
 	}
@@ -44,23 +39,20 @@ grid_t * grid_init(int dimension, int resolution) {
 }
 
 int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
-
 	if (grid == NULL) return 0;
 	if (grid->cells == NULL) return 0;
-
-	int new_x, new_y;
 
 	/*
 	** Transform each sensor reading into cartesian coordinates and increase the
 	** corresponding cell's obstacle density.
-	** ** Polar to cartesian:
-	** (r, o) -> (r * cos(x), r * sin(y))
+  **
+	** Polar to cartesian:
+	**   (r, o) -> (r * cos(x), r * sin(y))
 	**
 	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
 	*/
-	/* Initialize the offset of the point i. */
-	new_x = pos_x;
-	new_y = pos_y;
+	int new_x = pos_x;
+	int new_y = pos_y;
 
 	new_x += (int) floor((data.distance / grid->resolution) *
 		cos(data.direction * M_PI / 180));
