@@ -14,7 +14,7 @@
 
 /* Control signal created by the algorithm. */
 typedef struct {
-	int direction; /* [degrees] */
+  int direction; /* [degrees] */
 } control_signal_t;
 
 /* Helpers. */

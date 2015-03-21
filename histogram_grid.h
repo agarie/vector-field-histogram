@@ -3,15 +3,15 @@
 
 /* Certainty grid. */
 typedef struct {
-	int dimension;
-	int resolution;
-	int *cells;
+  int dimension;
+  int resolution;
+  int *cells;
 } grid_t;
 
 /* A rangefinder measurement. */
 typedef struct {
-	int direction; /* [degrees] */
-	unsigned long distance; /* [cm] */
+  int direction; /* [degrees] */
+  unsigned long distance; /* [cm] */
 } range_measure_t;
 
 /* Certainty grid. */
