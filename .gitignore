@@ -4,3 +4,7 @@
 
 *.a
 *.dylib
+
+# Doxygen-generated documentation.
+html/
+latex/
