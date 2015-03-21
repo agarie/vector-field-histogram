@@ -51,14 +51,10 @@ int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data) {
 	**
 	** Remember that cos() and sin() expect angles in RADIANS, not DEGREES.
 	*/
-	int new_x = pos_x;
-	int new_y = pos_y;
+  double cells = data.distance / grid->resolution;
 
-	new_x += (int) floor((data.distance / grid->resolution) *
-		cos(data.direction * M_PI / 180));
-
-	new_y += (int) floor((data.distance / grid->resolution) *
-		sin(data.direction * M_PI / 180));
+	int new_x = pos_x + (int) floor(cells * cos(data.direction * M_PI / 180));
+	int new_y = pos_y + (int) floor(cells * sin(data.direction * M_PI / 180));
 
 	/* Is this point inside the grid? (to avoid overflows) */
 	if (new_x < grid->dimension && new_y < grid->dimension) {
