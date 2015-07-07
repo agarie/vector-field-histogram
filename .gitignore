@@ -1,7 +1,9 @@
+# Generated examples.
+create_histogram_grid
+
 *.d
-
 *.o
-
+*.dSYM/
 *.a
 *.dylib
 
