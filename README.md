@@ -32,4 +32,4 @@ A threshold is applied to the polar histogram, selecting only the sectors with o
 
 ## License
 
-Copyright (c) 2012-2015 Carlos Agarie. See LICENSE for details.
+Copyright (c) 2012-2016 Carlos Agarie. See LICENSE for details.
