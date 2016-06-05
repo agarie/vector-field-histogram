@@ -32,4 +32,5 @@ grid_t * get_moving_window(grid_t * grid, int pos_x, int pos_y, int dimension);
 
 /* grid_update: Update grid's cells with an array of sensor readings. */
 int grid_update(grid_t * grid, int pos_x, int pos_y, range_measure_t data);
+
 #endif

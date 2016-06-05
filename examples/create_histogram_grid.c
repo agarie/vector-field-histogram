@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "histogram_grid.h"
+#include "../include/histogram_grid.h"
 
 #define DIMENSION 33 // Number of cells.
 #define RESOLUTION 10 // Size of the cell in centimeters.
