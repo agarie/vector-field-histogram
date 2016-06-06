@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-Iinclude -Wall -O3 -std=c99
 LDLIBS=-lm
 
-all: build examples
+all: build examples clean_objs
 build: $(OBJECTS)
 examples: $(EXAMPLES)
 
@@ -20,5 +20,8 @@ polar_histogram.c: include/polar_histogram.h include/histogram_grid.h
 create_histogram_grid: examples/create_histogram_grid.c histogram_grid.o
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
-clean:
-	rm -f $(OBJECTS) $(EXAMPLES)
+clean_objs:
+	rm -f $(OBJECTS)
+
+clean: clean_objs
+	rm -f $(EXAMPLES)
