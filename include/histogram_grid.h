@@ -6,6 +6,10 @@
 #ifndef HISTOGRAM_GRID_H
 #define HISTOGRAM_GRID_H
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /* Histogram grid.
  *
  * Use `i * dimension + j` to iterate over the `cells`.
